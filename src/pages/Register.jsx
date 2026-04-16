@@ -1,9 +1,9 @@
-// src/pages/Register.jsx - Full file with fixed navigation (useNavigate)
+// src/pages/Register.jsx - Full file with backend integration
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Stars, Sphere, Preload, Ring } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, Suspense, useRef, useCallback } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";  // FIXED: Added useNavigate
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import * as THREE from "three";
 
 /* -----------------------------------------------------------
@@ -318,8 +318,10 @@ export default function Register() {  // Renamed from Signup for your file name
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [terms, setTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const location = useLocation();
-  const navigate = useNavigate();  // FIXED: Added for smooth redirect
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => setLoaded(true), 1000);
@@ -352,10 +354,42 @@ export default function Register() {  // Renamed from Signup for your file name
     }
   }, [loaded]);
 
-  const handleSubmit = (e) => {  // FIXED: Use navigate instead of window.location
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add real signup logic here (e.g., API call)
-    navigate("/dashboard");  // Smooth SPA redirect
+    if (!terms) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:8000/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || "Signup failed");
+      }
+
+      // On success, clear form and navigate
+      setName("");
+      setEmail("");
+      setPassword("");
+      setTerms(false);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -514,6 +548,7 @@ export default function Register() {  // Renamed from Signup for your file name
                         onChange={(e) => setName(e.target.value)}
                         className="w-full p-4 rounded-xl bg-white/10 text-white outline-none focus:ring-2 focus:ring-green-500 transition-all border border-white/20 placeholder:text-gray-500"
                         required
+                        disabled={loading}
                       />
                     </motion.div>
 
@@ -531,6 +566,7 @@ export default function Register() {  // Renamed from Signup for your file name
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full p-4 rounded-xl bg-white/10 text-white outline-none focus:ring-2 focus:ring-green-500 transition-all border border-white/20 placeholder:text-gray-500"
                         required
+                        disabled={loading}
                       />
                     </motion.div>
 
@@ -548,6 +584,7 @@ export default function Register() {  // Renamed from Signup for your file name
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full p-4 rounded-xl bg-white/10 text-white outline-none focus:ring-2 focus:ring-green-500 transition-all border border-white/20 placeholder:text-gray-500"
                         required
+                        disabled={loading}
                       />
                     </motion.div>
 
@@ -565,23 +602,37 @@ export default function Register() {  // Renamed from Signup for your file name
                         onChange={(e) => setTerms(e.target.checked)}
                         className="mt-1 w-4 h-4 accent-green-500"
                         required
+                        disabled={loading}
                       />
                       <label htmlFor="terms" className="text-gray-400 text-sm">
                         I agree to the Terms of Service and Privacy Policy
                       </label>
                     </motion.div>
 
+                    {/* Error Message */}
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        className="bg-red-500/20 border border-red-500/30 text-red-300 p-3 rounded-xl text-sm"
+                      >
+                        {error}
+                      </motion.div>
+                    )}
+
                     {/* Register Button */}
                     <motion.button
                       type="submit"
-                      disabled={!terms}
+                      disabled={!terms || loading}
                       className="group relative w-full bg-gradient-to-r from-green-600 to-cyan-600 py-4 mt-2 rounded-xl text-white text-lg font-semibold hover:shadow-green-500/50 hover:scale-105 transition-all overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 1.0, duration: 0.4 }}
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <span className="relative z-10">Create Account</span>
+                      <span className="relative z-10">
+                        {loading ? "Creating Account..." : "Create Account"}
+                      </span>
                       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-green-600 to-cyan-600 blur-xl opacity-50 group-hover:opacity-75" />
                     </motion.button>
                   </div>

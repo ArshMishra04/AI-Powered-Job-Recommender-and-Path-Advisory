@@ -340,6 +340,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -378,10 +380,41 @@ export default function Login() {
     }
   }, [loaded]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // FIXED: Use navigate for smooth SPA redirect
-    navigate("/dashboard");
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:8000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || "Login failed");
+      }
+
+      const data = await response.json();
+      // Store token in localStorage for future requests
+      localStorage.setItem("access_token", data.access_token);
+
+      // Clear form and navigate
+      setEmail("");
+      setPassword("");
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const togglePassword = () => {
@@ -513,8 +546,9 @@ export default function Login() {
                         placeholder="you@cosmos.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full p-4 rounded-xl bg-white/10 text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all border border-white/20 pr-12" // FIXED: Added pr-12 for icon space
+                        className="w-full p-4 rounded-xl bg-white/10 text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all border border-white/20 pr-12"
                         required
+                        disabled={loading}
                       />
                     </motion.div>
 
@@ -523,7 +557,7 @@ export default function Login() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.7, duration: 0.4 }}
-                      className="relative" // FIXED: Relative for absolute toggle
+                      className="relative"
                     >
                       <label className="text-gray-300 text-sm block mb-2 text-left">Password</label>
                       <input
@@ -531,23 +565,38 @@ export default function Login() {
                         placeholder="Enter secure key"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full p-4 rounded-xl bg-white/10 text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all border border-white/20 pr-12" // FIXED: Added pr-12 for icon space
+                        className="w-full p-4 rounded-xl bg-white/10 text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all border border-white/20 pr-12"
                         required
+                        disabled={loading}
                       />
                       {/* FIXED: Custom Toggle with no default cursor/focus */}
                       <PasswordToggle showPassword={showPassword} onToggle={togglePassword} />
                     </motion.div>
 
+                    {/* Error Message */}
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        className="bg-red-500/20 border border-red-500/30 text-red-300 p-3 rounded-xl text-sm"
+                      >
+                        {error}
+                      </motion.div>
+                    )}
+
                     {/* Login Button */}
                     <motion.button
                       type="submit"
-                      className="group relative w-full bg-gradient-to-r from-purple-600 to-blue-600 py-4 mt-2 rounded-xl text-white text-lg font-semibold hover:shadow-purple-500/50 hover:scale-105 transition-all overflow-hidden"
+                      disabled={loading}
+                      className="group relative w-full bg-gradient-to-r from-purple-600 to-blue-600 py-4 mt-2 rounded-xl text-white text-lg font-semibold hover:shadow-purple-500/50 hover:scale-105 transition-all overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.8, duration: 0.4 }}
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <span className="relative z-10">Enter Portal</span>
+                      <span className="relative z-10">
+                        {loading ? "Entering Portal..." : "Enter Portal"}
+                      </span>
                       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-purple-600 to-blue-600 blur-xl opacity-50 group-hover:opacity-75" />
                     </motion.button>
                   </div>
@@ -561,7 +610,7 @@ export default function Login() {
                 >
                   New to the universe?{" "}
                   <Link
-                    to="/register"  // FIXED: Changed from /signup to /register for consistency
+                    to="/register"
                     className="text-purple-400 hover:underline font-semibold"
                   >
                     Create Account
