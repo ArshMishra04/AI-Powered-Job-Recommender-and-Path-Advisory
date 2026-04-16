@@ -1,0 +1,47 @@
+{
+  "abhijit123": {
+    "user_id": "abhijit123",
+    "name": "Abhijit",
+    "email": "abhi@example.com",
+    "created_at": "2025-11-24T21:36:44.406562",
+    "updated_at": "2025-11-24T21:37:59.399495",
+    "skills": [
+      "python",
+      "sql"
+    ],
+    "interests": [
+      "data",
+      "machine learning"
+    ],
+    "education": "BSc IT",
+    "experience_years": 1,
+    "personality": "analytical",
+    "work_style": "remote",
+    "goals": "become data engineer"
+  },
+  "string": {
+    "user_id": "string",
+    "name": "string",
+    "email": "string",
+    "created_at": "2025-12-06T14:53:19.115009",
+    "updated_at": "2025-12-06T14:53:19.115009"
+  },
+  "1": {
+    "user_id": "1",
+    "name": "string",
+    "email": "abc@gmail.com",
+    "created_at": "2025-12-06T14:53:49.389443",
+    "updated_at": "2025-12-29T12:41:49.884362",
+    "skills": [
+      "string"
+    ],
+    "interests": [
+      "string"
+    ],
+    "education": "string",
+    "experience_years": 0,
+    "personality": "string",
+    "work_style": "string",
+    "goals": "string"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "Python": "Easy",
+  "Java": "Medium",
+  "C++": "Hard",
+  "Machine Learning": "Hard",
+  "Deep Learning": "Hard",
+  "SQL": "Medium",
+  "Git": "Easy",
+  "Docker": "Medium",
+  "Kubernetes": "Hard",
+  "Azure": "Medium",
+  "AWS": "Medium",
+  "REST APIs": "Easy",
+  "Linux": "Medium",
+  "Data Structures": "Hard",
+  "Microservices": "Hard",
+  "HTML": "Easy",
+  "CSS": "Easy",
+  "JavaScript": "Medium"
+}
